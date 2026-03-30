@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LangGraph 个性化旅行 Agent</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=20260323-trip-board-v2" />
+  </head>
+  <body data-release-label="trip-board-v2">
+    <div class="bg-grid"></div>
+    <main class="layout">
+      <section class="hero card">
+        <p class="eyebrow">LangGraph Stateful Workflow</p>
+        <h1>个性化旅行推荐 Agent</h1>
+        <p class="subtitle">
+          支持多轮澄清、预算校验、长期偏好记忆。先创建会话，再开始对话。
+        </p>
+        <div class="build-meta" aria-label="app-build-info">
+          <span id="appVersion" class="status-chip">版本检测中...</span>
+          <span id="buildTime" class="status-chip">构建时间检测中...</span>
+        </div>
+        <div class="config-row">
+          <label>
+            API Base
+            <input id="apiBase" value="http://localhost:8001" />
+          </label>
+          <label>
+            User ID
+            <input id="userId" value="demo_user" />
+          </label>
+          <button id="createSessionBtn" class="btn-main">创建会话</button>
+        </div>
+        <div id="sessionInfo" class="session-info">尚未创建会话</div>
+      </section>
+
+      <section class="chat card">
+        <div class="chat-header">
+          <h2>聊天输入</h2>
+          <p>示例：我想去杭州玩3天，2026-05-01出发，预算3000元，偏好美食，地铁出行。</p>
+        </div>
+        <div id="chatLog" class="chat-log"></div>
+        <div class="composer">
+          <textarea id="messageInput" placeholder="输入你的旅行需求..."></textarea>
+          <button id="sendBtn" class="btn-main">发送</button>
+        </div>
+      </section>
+
+      <section class="result card">
+        <div class="result-header">
+          <div>
+            <p class="eyebrow">Presentation View</p>
+            <h2>旅行看板</h2>
+          </div>
+          <p class="result-subtitle">展示天气、景点图片、酒店、预算与个性化推荐理由。</p>
+        </div>
+        <div id="planView" class="plan-view is-empty">
+          <div class="empty-state">
+            <div class="empty-icon">🧳</div>
+            <h3>暂无规划结果</h3>
+            <p>创建会话并发送需求后，这里会展示完整的可视化旅行计划。</p>
+          </div>
+        </div>
+        <details class="raw-json-shell">
+          <summary>查看原始 JSON 数据</summary>
+          <pre id="planJson" class="json-view">{}</pre>
+        </details>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js?v=20260324-trip-board-v3"></script>
+  </body>
+</html>
