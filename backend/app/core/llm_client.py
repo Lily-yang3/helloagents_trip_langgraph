@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Sequence, Union
 
 from openai import OpenAI
 
+from app.mcp.models import MCPToolCall, MCPToolDescriptor
+
 from .config import get_settings
 
 Message = Dict[str, str]
@@ -55,6 +57,79 @@ class LLMClient:
             except Exception as exc:  # pragma: no cover
                 last_error = exc
         raise RuntimeError(f"LLM request failed: {last_error}")
+
+    def plan_tool_calls(
+        self,
+        request_context: Dict[str, Any],
+        tools: Sequence[MCPToolDescriptor],
+    ) -> List[MCPToolCall]:
+        """Ask the model to choose tool calls from the dynamic MCP tool inventory."""
+        if self._client is None or not tools:
+            return []
+
+        messages: List[Message] = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a travel planning tool router. Select the minimum set of tools needed to "
+                    "retrieve trip candidates. Prefer one call per capability, fill arguments from context, "
+                    "and do not invent tool names beyond the provided list."
+                ),
+            },
+            {
+                "role": "user",
+                "content": json.dumps(request_context, ensure_ascii=False),
+            },
+        ]
+        tool_payload = [
+            {
+                "type": "function",
+                "function": {
+                    "name": item.name,
+                    "description": item.description,
+                    "parameters": item.input_schema or {"type": "object", "properties": {}},
+                },
+            }
+            for item in tools
+        ]
+
+        attempts = [
+            {
+                "model": self.model,
+                "messages": messages,
+                "tools": tool_payload,
+                "tool_choice": "auto",
+                "temperature": 0,
+                "max_tokens": 800,
+            },
+            {
+                "model": self.model,
+                "messages": messages,
+                "tools": tool_payload,
+                "tool_choice": "auto",
+            },
+        ]
+        for params in attempts:
+            try:
+                response = self._client.chat.completions.create(**params)
+                message = response.choices[0].message
+                tool_calls = getattr(message, "tool_calls", None) or []
+                parsed_calls: List[MCPToolCall] = []
+                for item in tool_calls:
+                    function = getattr(item, "function", None)
+                    if function is None:
+                        continue
+                    raw_arguments = getattr(function, "arguments", "") or "{}"
+                    try:
+                        arguments = json.loads(raw_arguments)
+                    except json.JSONDecodeError:
+                        continue
+                    parsed_calls.append(MCPToolCall(name=function.name, arguments=arguments))
+                if parsed_calls:
+                    return parsed_calls
+            except Exception:  # pragma: no cover
+                continue
+        return []
 
     def extract_json(self, text: str) -> Dict[str, Any]:
         """Best-effort json extraction from free text."""

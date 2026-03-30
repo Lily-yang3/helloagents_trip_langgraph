@@ -24,6 +24,9 @@ class PlannerState(TypedDict, total=False):
     memory_profile: Dict[str, Any]
     memory_patch: Dict[str, Any]
 
+    mcp_available_tools: List[Dict[str, Any]]
+    tool_calls: List[Dict[str, Any]]
+    tool_results: List[Dict[str, Any]]
     candidates: Dict[str, Any]
     raw_plan: Dict[str, Any]
     personalized_plan: Dict[str, Any]

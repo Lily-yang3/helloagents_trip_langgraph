@@ -24,21 +24,15 @@ from app.graph.router import route_budget, route_missing_info
 from app.graph.state import PlannerState
 from app.memory.short_term import build_checkpointer
 from app.memory.summarizer import PreferenceSummarizer
+from app.services.mcp_agent import MCPTravelAgent
 from app.services.request_parser import RequestParser
 from app.tools.budget_tool import BudgetTool
-from app.tools.food_tool import FoodTool
-from app.tools.hotel_tool import HotelTool
-from app.tools.map_tool import MapTool
 from app.tools.memory_tool import MemoryTool
-from app.tools.weather_tool import WeatherTool
 
 
 @dataclass
 class PlannerGraphDeps:
-    map_tool: MapTool
-    weather_tool: WeatherTool
-    hotel_tool: HotelTool
-    food_tool: FoodTool
+    retrieval_agent: MCPTravelAgent
     budget_tool: BudgetTool
     memory_tool: MemoryTool
     parser: RequestParser
@@ -57,12 +51,7 @@ def build_planner_graph(deps: PlannerGraphDeps) -> Any:
     graph.add_node("ask_clarification", make_ask_clarification_node(deps.parser))
     graph.add_node(
         "retrieve_candidates",
-        make_retrieve_candidates_node(
-            map_tool=deps.map_tool,
-            weather_tool=deps.weather_tool,
-            hotel_tool=deps.hotel_tool,
-            food_tool=deps.food_tool,
-        ),
+        make_retrieve_candidates_node(retrieval_agent=deps.retrieval_agent),
     )
     graph.add_node("build_candidate_plan", make_build_candidate_plan_node())
     graph.add_node("personalize_rerank", make_personalize_rerank_node())

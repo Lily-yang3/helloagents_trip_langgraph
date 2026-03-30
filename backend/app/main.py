@@ -41,7 +41,9 @@ def on_startup() -> None:
     print_settings()
 
     # Warm up singleton dependencies to surface config/runtime errors early.
-    get_container()
+    container = get_container()
+    tool_names = ", ".join(item.name for item in container.mcp_service.list_tools())
+    print(f"[mcp] started global tool service with {len(container.mcp_service.list_tools())} tools: {tool_names}")
 
 
 @app.get("/", response_model=dict)
